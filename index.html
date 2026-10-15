@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIAP UJI - Bab 4 Jeda untuk Iklim</title>
+<style>
+:root{--green:#16784b;--lime:#d8f3dc;--dark:#16352a;--bg:#f1f8f3;--orange:#ffbf69}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#23352c}
+header{background:linear-gradient(120deg,#12643f,#31a36a);color:white;padding:22px 15px;text-align:center}
+header h1{margin:8px 0;font-size:27px}
+header p{margin:5px}
+.logo{font-size:42px}
+.container{max-width:900px;margin:20px auto;padding:0 14px}
+.card{background:white;padding:22px;border-radius:18px;box-shadow:0 5px 20px #16352a12;margin-bottom:18px}
+h2{color:var(--green);margin-top:0}
+input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccd9cf;border-radius:9px;font:inherit}
+button{border:0;border-radius:10px;padding:12px 17px;background:var(--green);color:white;font-weight:bold;cursor:pointer;margin:4px}
+button:hover{filter:brightness(.93)}
+button.secondary{background:#60786a}
+button.orange{background:#e58a18}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.pill{display:inline-block;background:var(--lime);color:#145c38;border-radius:20px;padding:6px 10px;font-size:13px;margin:3px}
+.progress{height:10px;background:#e5eee7;border-radius:20px;overflow:hidden;margin:12px 0}
+.progress div{height:100%;width:0;background:#31a36a;transition:width .2s}
+.question{border:1px solid #e0eae2;border-radius:13px;padding:16px;margin:14px 0}
+.question h3{font-size:16px;margin-top:0;line-height:1.5}
+.option{display:flex;gap:9px;align-items:flex-start;padding:9px;background:#f7faf7;border-radius:8px;margin:6px 0;cursor:pointer}
+.option input{width:auto;margin:3px 0 0}
+.small{font-size:13px;color:#5e7165;line-height:1.5}
+.points{color:#b76a08;font-weight:bold;font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:5px}
+.score{font-size:38px;font-weight:bold;color:var(--green)}
+footer{text-align:center;padding:18px;color:#64766a;font-size:12px}
+table{width:100%;border-collapse:collapse}
+td,th{border:1px solid #d9e4db;padding:8px;text-align:left}
+@media(max-width:600px){header h1{font-size:22px}.card{padding:15px}.container{padding:0 9px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🌱 🌍</div>
+  <div><b>SIAP UJI</b></div>
+  <h1>Sistem Interaktif Asesmen Pembelajaran untuk Uji Kompetensi</h1>
+  <p><b>SD Negeri Denanyar 1</b></p>
+  <p>Bahasa Indonesia Kelas VI · Bab 4: Jeda untuk Iklim</p>
+</header>
+
+<main class="container">
+<section id="login" class="card">
+  <h2>🌿 Selamat Datang, Pejuang Iklim!</h2>
+  <p>Masuk untuk mengikuti permainan asesmen Bab 4. Bacalah setiap soal dengan teliti.</p>
+  <label for="student">Nama lengkap</label>
+  <select id="student">
+    <option value="">-- Pilih nama siswa --</option>
+  </select>
+  <label for="password">NIPD (kata sandi)</label>
+  <input id="password" type="password" inputmode="numeric" placeholder="Masukkan NIPD">
+  <button onclick="loginStudent()">🚀 Masuk dan Mulai</button>
+  <p id="loginError" style="color:#b42318"></p>
+  <p class="small">Kerjakan secara mandiri. Pastikan nama dan NIPD yang dipilih benar.</p>
+</section>
+
+<section id="welcome" class="card hidden">
+  <h2>🎮 Misi Jeda untuk Iklim</h2>
+  <p>Halo, <b id="welcomeName"></b>! Selesaikan 40 soal untuk menuntaskan misi pembelajaran.</p>
+  <div class="pill">15 Pilihan Ganda</div><div class="pill">5 Pilihan Ganda Kompleks</div>
+  <div class="pill">5 Menjodohkan</div><div class="pill">10 Isian Singkat</div><div class="pill">5 Uraian</div>
+  <p class="small">Skor maksimal 100: soal pilihan ganda 30 poin, pilihan ganda kompleks 20 poin, menjodohkan 10 poin, isian singkat 20 poin, dan uraian 20 poin. Uraian perlu dinilai guru.</p>
+  <button onclick="startQuiz()">Mulai Misi 🌎</button>
+</section>
+
+<section id="quiz" class="card hidden">
+  <div class="actions">
+    <span class="pill" id="studentBadge"></span>
+    <span class="pill" id="sectionBadge"></span>
+  </div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <p id="progressText" class="small"></p>
+  <div id="questionArea"></div>
+  <div class="actions">
+    <button class="secondary" id="prevBtn" onclick="move(-1)">← Sebelumnya</button>
+    <button id="nextBtn" onclick="move(1)">Berikutnya →</button>
+    <button class="orange hidden" id="finishBtn" onclick="finishQuiz()">🏁 Selesaikan Ulangan</button>
+  </div>
+  <p class="small">Jawaban tersimpan sementara selama halaman ini terbuka. Periksa kembali sebelum menyelesaikan ulangan.</p>
+</section>
+
+<section id="result" class="card hidden">
+  <h2>🏆 Misi Selesai!</h2>
+  <p>Nama: <b id="resultName"></b></p>
+  <p>NIPD: <span id="resultNipd"></span></p>
+  <p>Waktu selesai: <span id="resultTime"></span></p>
+  <div class="score"><span id="objectiveScore">0</span>/80</div>
+  <p>Skor otomatis soal objektif</p>
+  <p id="essayStatus" class="pill">Uraian menunggu penilaian guru</p>
+  <div id="scoreBreakdown"></div>
+  <h3>Jawaban uraian untuk dinilai guru</h3>
+  <div id="essayReview"></div>
+  <div class="actions">
+    <button onclick="prepareEmail()">✉️ Siapkan Email Hasil</button>
+    <button class="secondary" onclick="downloadCSV()">⬇️ Unduh Hasil CSV</button>
+    <button class="secondary" onclick="window.print()">🖨️ Cetak Hasil</button>
+  </div>
+  <p class="small">Tombol email membuka aplikasi email. Periksa pesan dan tekan tombol Kirim. File CSV dapat disimpan untuk dokumentasi guru.</p>
+</section>
+</main>
+<footer>SIAP UJI · SD Negeri Denanyar 1 · Belajar hari ini, menjaga bumi esok hari 🌏</footer>
+
+<script>
+const students = [
+["ABID ALVARO GAVRIEL","2759"],
+["AFFIN CHARLISA ACHYARNIS","2760"],
+["ALBY FAREL AXEL FAIRUS","2761"],
+["ANGGRAITA DARA KUSUMANINGRUM","2762"],
+["ARGA ADAM ALFATIR","2763"],
+["ARIF AZHARI SETIAWAN","2764"],
+["AZIZ SATRIO PRAMBUDI","2765"],
+["AZKA KHOIRUNNISA","2766"],
+["BILQIS ZAHIRA ALYA AZIZA","2820"],
+["DANIEL IRKHAM YUNIANTO","2767"],
+["DELTA DANIES WICAKSONO","2768"],
+["ELVINA NOVITA SARI","2769"],
+["FATIN DESTIANA SHIDQIA","2770"],
+["IAN THU ALFIAN","2771"],
+["KHALISA ZAHRA RAMADHANI","2772"],
+["LABIBAH ANINDYA JIHAN TALITA ULFA","2774"],
+["MAYDA NURUL AZKIA","2775"],
+["MUHAMMAD AMIRRUDIN","2776"],
+["MUHAMMAD EZA HAFIZ ADITIYA","2777"],
+["MUHAMMAD RIFKY CAHYO SAPUTRO","2778"],
+["NURIYA JANNATUN NAIM","2779"],
+["PRABU AHMAD AHNAFI","2780"],
+["QEYLA ABSHARI FIRDA RAHMADANI","2848"],
+["RAHMAT MAULANA","2781"],
+["RAVA'EL DWI VANDIMAS","2782"],
+["RAVE'AL DIMAS PRAYOGA","2783"],
+["RISMACERLYN NUR ISKANDAR","2784"],
+["SAMUEL DESWA ANGGARA","2785"],
+["VAHDIL ASKA HARIANSYAH","2824"]
+];
+const questions = [
+{type:"pg",section:"Pilihan Ganda",q:"Teks eksplanasi ilmiah bertujuan untuk ....",o:["Menghibur pembaca dengan cerita khayalan","Menjelaskan proses terjadinya suatu fenomena","Menceritakan pengalaman pribadi","Mengajak pembaca membeli barang"],a:1},
+{type:"pg",section:"Pilihan Ganda",q:"Krisis iklim berkaitan erat dengan ....",o:["Perubahan pola suhu dan cuaca dalam jangka panjang","Pergantian nama suatu daerah","Perubahan jadwal pelajaran","Bertambahnya jumlah buku"],a:0},
+{type:"pg",section:"Pilihan Ganda",q:"Salah satu penyebab meningkatnya gas rumah kaca akibat kegiatan manusia adalah ....",o:["Menanam pohon","Menggunakan energi matahari","Membakar bahan bakar fosil","Memilah sampah"],a:2},
+{type:"pg",section:"Pilihan Ganda",q:"Teknik meringkas yang tepat adalah ....",o:["Menyalin semua kalimat","Menuliskan gagasan utama dengan bahasa ringkas","Menambahkan pendapat yang tidak ada dalam teks","Menghapus semua informasi penting"],a:1},
+{type:"pg",section:"Pilihan Ganda",q:"Langkah awal yang tepat saat meringkas teks eksplanasi adalah ....",o:["Membaca teks untuk memahami isinya","Mengganti seluruh judul","Menulis kesimpulan tanpa membaca","Menghitung jumlah huruf"],a:0},
+{type:"pg",section:"Pilihan Ganda",q:"Berita tentang aksi iklim sebaiknya memuat informasi yang ....",o:["Berdasarkan fakta dan dapat diperiksa","Hanya berisi rumor","Sengaja dibuat berlebihan","Tidak menyebut peristiwa"],a:0},
+{type:"pg",section:"Pilihan Ganda",q:"Saat menyampaikan tanggapan terhadap berita, kita sebaiknya ....",o:["Menghina orang yang berbeda pendapat","Menyampaikan alasan yang jelas dan sopan","Menyebarkan berita tanpa membaca","Mengubah fakta agar menarik"],a:1},
+{type:"pg",section:"Pilihan Ganda",q:"Sinonim kata 'lestari' adalah ....",o:["Rusak","Terjaga","Kotor","Hilang"],a:1},
+{type:"pg",section:"Pilihan Ganda",q:"Antonim kata 'hemat' adalah ....",o:["Irit","Cermat","Boros","Bijak"],a:2},
+{type:"pg",section:"Pilihan Ganda",q:"Sinonim kata 'polusi' adalah ....",o:["Pencemaran","Penghijauan","Pemulihan","Pelestarian"],a:0},
+{type:"pg",section:"Pilihan Ganda",q:"Infografik menyajikan informasi dengan memadukan ....",o:["Gambar dan data atau teks ringkas","Cerita panjang tanpa ilustrasi","Dialog tokoh khayalan saja","Kumpulan kata acak"],a:0},
+{type:"pg",section:"Pilihan Ganda",q:"Fast fashion adalah istilah untuk ....",o:["Pembuatan pakaian dengan tren cepat dan produksi massal","Pakaian khusus untuk olahraga lari","Pakaian tradisional yang selalu dibuat tangan","Kegiatan menanam kapas di rumah"],a:0},
+{type:"pg",section:"Pilihan Ganda",q:"Salah satu dampak lingkungan dari konsumsi pakaian berlebihan adalah ....",o:["Berkurangnya seluruh sampah","Bertambahnya limbah tekstil","Hilangnya kebutuhan air","Udara selalu menjadi bersih"],a:1},
+{type:"pg",section:"Pilihan Ganda",q:"Kalimat ajakan yang paling efektif untuk poster lingkungan adalah ....",o:["Sampah itu ada di mana-mana.","Pohon merupakan tumbuhan.","Ayo bawa botol minum sendiri untuk mengurangi sampah plastik!","Kemarin kami melihat sungai."],a:2},
+{type:"pg",section:"Pilihan Ganda",q:"Ciri poster persuasif yang baik adalah ....",o:["Pesan jelas, singkat, dan menarik","Tulisan sangat panjang dan sulit dibaca","Tidak memiliki pesan","Gambar tidak berhubungan dengan tema"],a:0},
+
+{type:"kompleks",section:"Pilihan Ganda Kompleks",q:"Pilih semua tindakan yang dapat membantu mengurangi dampak krisis iklim.",o:["Menghemat listrik","Menanam dan merawat pohon","Membakar sampah setiap hari","Berjalan kaki untuk jarak dekat jika aman","Membiarkan keran air terbuka"],a:[0,1,3]},
+{type:"kompleks",section:"Pilihan Ganda Kompleks",q:"Pilih ciri ringkasan yang baik.",o:["Memuat gagasan utama","Menggunakan kalimat yang ringkas","Menambahkan semua pendapat pribadi","Tetap sesuai isi teks sumber","Selalu lebih panjang daripada teks asli"],a:[0,1,3]},
+{type:"kompleks",section:"Pilihan Ganda Kompleks",q:"Saat menanggapi berita aksi iklim, hal yang tepat dilakukan adalah ....",o:["Memeriksa sumber informasi","Menyampaikan alasan yang relevan","Menghina narasumber","Membedakan fakta dan pendapat","Menyebarkan kabar yang belum jelas"],a:[0,1,3]},
+{type:"kompleks",section:"Pilihan Ganda Kompleks",q:"Pilih pasangan sinonim yang benar.",o:["Lestari — terjaga","Polusi — pencemaran","Boros — hemat","Dampak — akibat","Bersih — kotor"],a:[0,1,3]},
+{type:"kompleks",section:"Pilihan Ganda Kompleks",q:"Pilih ciri poster persuasif bertema lingkungan.",o:["Memakai kalimat ajakan","Memiliki pesan yang mudah dipahami","Menggunakan gambar yang sesuai","Memuat sebanyak mungkin paragraf panjang","Mendorong tindakan positif"],a:[0,1,2,4]},
+
+{type:"match",section:"Menjodohkan",q:"Jodohkan istilah dengan pengertian yang tepat.",pairs:[
+["Teks eksplanasi","Teks yang menjelaskan proses terjadinya fenomena"],
+["Sinonim","Kata yang memiliki makna sama atau hampir sama"],
+["Antonim","Kata yang memiliki makna berlawanan"],
+["Infografik","Penyajian informasi melalui visual dan teks ringkas"],
+["Poster persuasif","Media visual untuk mengajak atau memengaruhi pembaca"]
+]},
+{type:"match",section:"Menjodohkan",q:"Jodohkan kosakata dengan maknanya.",pairs:[
+["Emisi","Pelepasan gas atau zat ke lingkungan"],
+["Daur ulang","Mengolah kembali bahan bekas menjadi sesuatu yang berguna"],
+["Konservasi","Perlindungan dan pelestarian alam"],
+["Limbah","Sisa kegiatan yang dapat dibuang atau diolah"],
+["Efisien","Mencapai hasil dengan penggunaan sumber daya secara tepat"]
+]},
+{type:"match",section:"Menjodohkan",q:"Jodohkan kata dengan antonimnya.",pairs:[
+["Boros","Hemat"],
+["Kotor","Bersih"],
+["Rusak","Utuh"],
+["Meningkat","Menurun"],
+["Langka","Melimpah"]
+]},
+{type:"match",section:"Menjodohkan",q:"Jodohkan bagian teks dengan fungsinya.",pairs:[
+["Judul","Menunjukkan pokok bahasan teks"],
+["Pernyataan umum","Memperkenalkan fenomena yang dibahas"],
+["Deretan penjelas","Menjelaskan sebab, proses, atau akibat"],
+["Kesimpulan","Merangkum inti pembahasan"],
+["Sumber berita","Menunjukkan asal informasi berita"]
+]},
+{type:"match",section:"Menjodohkan",q:"Jodohkan tindakan dengan manfaatnya.",pairs:[
+["Membawa tas belanja pakai ulang","Mengurangi penggunaan kantong sekali pakai"],
+["Memperbaiki pakaian","Memperpanjang masa pakai pakaian"],
+["Memilah sampah","Memudahkan pengolahan sampah"],
+["Mematikan lampu saat tidak digunakan","Menghemat energi listrik"],
+["Menggunakan kembali barang","Mengurangi jumlah barang yang dibuang"]
+]},
+
+{type:"short",section:"Isian Singkat",q:"Teks yang menjelaskan proses terjadinya suatu fenomena disebut teks ....",a:["eksplanasi"]},
+{type:"short",section:"Isian Singkat",q:"Gas yang menyerap dan memerangkap panas di atmosfer disebut gas ....",a:["rumah kaca"]},
+{type:"short",section:"Isian Singkat",q:"Menuliskan inti teks dengan lebih singkat disebut ....",a:["meringkas","ringkasan"]},
+{type:"short",section:"Isian Singkat",q:"Kata yang maknanya sama atau hampir sama disebut ....",a:["sinonim"]},
+{type:"short",section:"Isian Singkat",q:"Kata yang maknanya berlawanan disebut ....",a:["antonim"]},
+{type:"short",section:"Isian Singkat",q:"Pencemaran lingkungan dapat disebut juga ....",a:["polusi","pencemaran"]},
+{type:"short",section:"Isian Singkat",q:"Pakaian yang dibuat untuk digunakan kembali setelah diperbaiki membantu memperpanjang .... pakai pakaian.",a:["masa"]},
+{type:"short",section:"Isian Singkat",q:"Penyajian data dalam bentuk gambar, simbol, dan teks ringkas disebut ....",a:["infografik","infografis"]},
+{type:"short",section:"Isian Singkat",q:"Kalimat yang bertujuan mengajak pembaca melakukan sesuatu disebut kalimat ....",a:["ajakan","persuasif"]},
+{type:"short",section:"Isian Singkat",q:"Sebelum membagikan berita aksi iklim, kita perlu memeriksa kebenaran dan .... informasi.",a:["sumber"]},
+
+{type:"essay",section:"Uraian",q:"Jelaskan pengertian krisis iklim dan tuliskan dua kegiatan manusia yang dapat memperparahnya."},
+{type:"essay",section:"Uraian",q:"Bacalah teks berikut: “Sampah plastik sulit terurai secara alami. Sampah yang menumpuk dapat mencemari tanah dan perairan. Oleh karena itu, penggunaan barang pakai ulang dan pemilahan sampah perlu dibiasakan.” Buatlah ringkasan teks tersebut dengan bahasamu sendiri."},
+{type:"essay",section:"Uraian",q:"Kamu membaca berita bahwa siswa di sebuah sekolah mengadakan kegiatan menanam pohon. Tuliskan tanggapanmu dengan menyertakan alasan yang masuk akal."},
+{type:"essay",section:"Uraian",q:"Tuliskan masing-masing satu kalimat menggunakan sinonim kata “lestari” dan antonim kata “boros”."},
+{type:"essay",section:"Uraian",q:"Rancang isi poster persuasif bertema mengurangi fast fashion. Tuliskan judul, kalimat ajakan, dan gambaran visual yang akan kamu gunakan."}
+];
+
+let currentStudent=null, answers={}, idx=0, objective=0, breakdown={};
+const $=id=>document.getElementById(id);
+students.forEach((s,i)=>{let op=document.createElement("option");op.value=i;op.textContent=s[0];$("student").appendChild(op)});
+function loginStudent(){
+ let i=$("student").value, p=$("password").value.trim();
+ if(i==="" || p===""){ $("loginError").textContent="Pilih nama dan masukkan NIPD.";return; }
+ if(students[Number(i)][1]!==p){$("loginError").textContent="NIPD tidak sesuai. Periksa kembali.";return;}
+ currentStudent={name:students[Number(i)][0],nipd:students[Number(i)][1]};
+ $("loginError").textContent="";
+ $("login").classList.add("hidden");$("welcome").classList.remove("hidden");
+ $("welcomeName").textContent=currentStudent.name;
+}
+function startQuiz(){
+ $("welcome").classList.add("hidden");$("quiz").classList.remove("hidden");
+ $("studentBadge").textContent=currentStudent.name;
+ idx=0;renderQuestion();
+}
+function getSection(q){return q.section}
+function renderQuestion(){
+ const q=questions[idx], area=$("questionArea");
+ $("sectionBadge").textContent=q.section;
+ $("progressText").textContent=`Soal ${idx+1} dari ${questions.length}`;
+ $("progressBar").style.width=((idx+1)/questions.length*100)+"%";
+ let html=`<div class="question"><div class="points">SOAL ${idx+1} · ${q.section}</div><h3>${q.q}</h3>`;
+ if(q.type==="pg"){
+   q.o.forEach((o,i)=>{html+=`<label class="option"><input type="radio" name="answer" value="${i}" ${answers[idx]===i?"checked":""}><span>${String.fromCharCode(65+i)}. ${o}</span></label>`});
+ }else if(q.type==="kompleks"){
+   html+='<p class="small">Pilih semua jawaban yang benar.</p>';
+   q.o.forEach((o,i)=>{let checked=Array.isArray(answers[idx])&&answers[idx].includes(i);html+=`<label class="option"><input type="checkbox" name="answer" value="${i}" ${checked?"checked":""}><span>${String.fromCharCode(65+i)}. ${o}</span></label>`});
+ }else if(q.type==="match"){
+   html+='<p class="small">Pilih pengertian atau pasangan yang sesuai untuk setiap istilah.</p>';
+   let opts=q.pairs.map(x=>x[1]);
+   q.pairs.forEach((pair,i)=>{
+    html+=`<label>${i+1}. <b>${pair[0]}</b></label><select class="matchSelect" data-i="${i}"><option value="">-- Pilih pasangan --</option>`;
+    opts.forEach((o,j)=>html+=`<option value="${j}" ${answers[idx]?.[i]===j?"selected":""}>${String.fromCharCode(65+j)}. ${o}</option>`);
+    html+="</select>";
+   });
+ }else if(q.type==="short"){
+   html+=`<input id="shortAnswer" type="text" placeholder="Tulis jawaban singkat..." value="${escapeAttr(answers[idx]||"")}">`;
+ }else{
+   html+=`<textarea id="essayAnswer" rows="5" placeholder="Tuliskan jawabanmu dengan jelas...">${escapeHtml(answers[idx]||"")}</textarea>`;
+ }
+ html+="</div>";area.innerHTML=html;
+ $("prevBtn").disabled=idx===0;
+ $("nextBtn").classList.toggle("hidden",idx===questions.length-1);
+ $("finishBtn").classList.toggle("hidden",idx!==questions.length-1);
+}
+function saveCurrent(){
+ const q=questions[idx];
+ if(q.type==="pg"){let el=document.querySelector('input[name="answer"]:checked');answers[idx]=el?Number(el.value):null}
+ else if(q.type==="kompleks"){answers[idx]=[...document.querySelectorAll('input[name="answer"]:checked')].map(x=>Number(x.value))}
+ else if(q.type==="match"){answers[idx]=[...document.querySelectorAll(".matchSelect")].map(x=>x.value===""?null:Number(x.value))}
+ else if(q.type==="short"){answers[idx]=$("shortAnswer").value.trim()}
+ else {answers[idx]=$("essayAnswer").value.trim()}
+}
+function move(delta){saveCurrent();idx=Math.max(0,Math.min(questions.length-1,idx+delta));renderQuestion()}
+function sameSet(a,b){return a.length===b.length&&a.every(x=>b.includes(x))}
+function normalize(s){return String(s||"").trim().toLowerCase().replace(/[.,!?;:]/g,"").replace(/\s+/g," ")}
+function calculate(){
+ objective=0;breakdown={"Pilihan Ganda":0,"Pilihan Ganda Kompleks":0,"Menjodohkan":0,"Isian Singkat":0};
+ questions.forEach((q,i)=>{
+  const a=answers[i];
+  if(q.type==="pg"){if(a===q.a){objective+=2;breakdown[q.section]+=2}}
+  if(q.type==="kompleks"){if(Array.isArray(a)&&sameSet(a,q.a)){objective+=4;breakdown[q.section]+=4}}
+  if(q.type==="match"){
+   let correct=0;
+   q.pairs.forEach((p,j)=>{if(Array.isArray(a)&&a[j]===j)correct++});
+   let pts=correct*2;objective+=pts;breakdown[q.section]+=pts;
+  }
+  if(q.type==="short"){
+   let accepted=q.a.map(normalize);
+   if(accepted.includes(normalize(a))){objective+=2;breakdown[q.section]+=2}
+  }
+ });
+}
+function finishQuiz(){
+ saveCurrent();
+ let blank=questions.reduce((n,q,i)=>n+(answers[i]===undefined||answers[i]===null||answers[i]===""||(Array.isArray(answers[i])&&answers[i].length===0)?1:0),0);
+ if(blank>0&&!confirm(`Masih ada ${blank} soal yang belum dijawab. Tetap selesaikan ulangan?`))return;
+ if(!confirm("Yakin ingin menyelesaikan ulangan? Jawaban akan dihitung."))return;
+ calculate();
+ $("quiz").classList.add("hidden");$("result").classList.remove("hidden");
+ $("resultName").textContent=currentStudent.name;$("resultNipd").textContent=currentStudent.nipd;
+ $("resultTime").textContent=new Date().toLocaleString("id-ID");
+ $("objectiveScore").textContent=objective;
+ $("scoreBreakdown").innerHTML="<h3>Rincian skor otomatis</h3><table><tr><th>Jenis soal</th><th>Skor</th><th>Maksimal</th></tr>"+
+ Object.entries(breakdown).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td><td>${k==="Pilihan Ganda"?30:k==="Pilihan Ganda Kompleks"?20:k==="Menjodohkan"?10:20}</td></tr>`).join("")+
+ `<tr><th>Total objektif</th><th>${objective}</th><th>80</th></tr><tr><td>Uraian (dinilai guru)</td><td>—</td><td>20</td></tr></table>`;
+ $("essayReview").innerHTML=questions.map((q,i)=>q.type==="essay"?`<div class="question"><b>Soal ${i+1}.</b> ${q.q}<p>${escapeHtml(answers[i]||"(Belum dijawab)")}</p></div>`:"").join("");
+}
+function prepareEmail(){
+ let lines=[
+ "HASIL ULANGAN SIAP UJI - BAB 4: JEDA UNTUK IKLIM",
+ "SD Negeri Denanyar 1",
+ "Nama: "+currentStudent.name,"NIPD: "+currentStudent.nipd,
+ "Waktu: "+$("resultTime").textContent,
+ "Skor otomatis objektif: "+objective+"/80",
+ "Skor uraian: belum dinilai (maksimal 20)",
+ "",
+ "RINCIAN SKOR:"
+ ];
+ Object.entries(breakdown).forEach(([k,v])=>lines.push(k+": "+v));
+ lines.push("","JAWABAN SISWA:");
+ questions.forEach((q,i)=>{
+  let a=answers[i];
+  if(q.type==="pg")a=a===null||a===undefined?"Belum dijawab":q.o[a];
+  else if(q.type==="kompleks")a=Array.isArray(a)?a.map(j=>q.o[j]).join(" | "):"Belum dijawab";
+  else if(q.type==="match")a=Array.isArray(a)?q.pairs.map((p,j)=>p[0]+" → "+(a[j]===null||a[j]===undefined?"Belum dijawab":p[1+0] && q.pairs[a[j]]?q.pairs[a[j]][1]:"")).join("; "):"Belum dijawab";
+  lines.push(`${i+1}. ${q.q}`, "Jawaban: "+(a||"Belum dijawab"),"");
+ });
+ const subject=encodeURIComponent("Hasil SIAP UJI Bab 4 - "+currentStudent.name);
+ const body=encodeURIComponent(lines.join("\n"));
+ window.location.href="mailto:danysetyanto.ds@gmail.com?subject="+subject+"&body="+body;
+}
+function downloadCSV(){
+ const rows=[["Nama","NIPD","Skor objektif dari 80","Skor uraian dari 20","Skor total setelah penilaian guru","Waktu"]];
+ rows.push([currentStudent.name,currentStudent.nipd,objective,"","",""+$("resultTime").textContent]);
+ rows.push([]);
+ rows.push(["No","Jenis soal","Pertanyaan","Jawaban siswa","Kunci jawaban"]);
+ questions.forEach((q,i)=>{
+  let a=answers[i],answer="";
+  if(q.type==="pg")answer=a===null||a===undefined?"":q.o[a];
+  else if(q.type==="kompleks")answer=Array.isArray(a)?a.map(j=>q.o[j]).join(" | "):"";
+  else if(q.type==="match")answer=Array.isArray(a)?q.pairs.map((p,j)=>p[0]+" → "+(a[j]===null||a[j]===undefined?"":q.pairs[a[j]][1])).join("; "):"";
+  else answer=a||"";
+  rows.push([i+1,q.section,q.q,answer,q.type==="pg"?q.o[q.a]:q.type==="kompleks"?q.a.map(j=>q.o[j]).join(" | "):q.type==="match"?"Lihat pasangan pada soal":q.type==="short"?q.a.join(" / "):"Dinilai guru"]);
+ });
+ const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
+ const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="SIAP_UJI_Bab4_"+currentStudent.name.replace(/\s+/g,"_")+".csv";a.click();URL.revokeObjectURL(url);
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function escapeAttr(s){return escapeHtml(s)}
+</script>
+</body>
+</html>
